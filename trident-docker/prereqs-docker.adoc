@@ -1,0 +1,111 @@
+---
+sidebar: sidebar 
+permalink: trident-docker/prereqs-docker.html 
+keywords: deploy, astra trident, docker, trident for docker, nfs, iscsi, protcol, nfs protocol, iscsi protocol, configure host, host config 
+summary: Debe instalar y configurar los requisitos previos del protocolo necesarios en su host antes de poder poner en marcha Astra Trident. 
+---
+= Requisitos previos para la implementación
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+Debe instalar y configurar los requisitos previos del protocolo necesarios en su host antes de poder poner en marcha Astra Trident.
+
+* Compruebe que la implementación se adapte a todas las link:../trident-get-started/requirements.html["requisitos"^].
+* Compruebe que tiene instalada una versión compatible de Docker. Si la versión de Docker no está actualizada, https://docs.docker.com/engine/install/["instálelo o actualícelo"^].
+
+
+[listing]
+----
+docker --version
+----
+* Compruebe que los requisitos previos de protocolo estén instalados y configurados en el host:
+
+
+[cols="3*"]
+|===
+| Protocolo | De NetApp | Comandos 
+
+
+| NFS  a| 
+RHEL/CentOS
+ a| 
+`sudo yum install -y nfs-utils`
+
+
+
+| NFS  a| 
+Ubuntu/Debian
+ a| 
+`sudo apt-get install -y nfs-common`
+
+
+
+| ISCSI  a| 
+RHEL/CentOS
+ a| 
+. Instale los siguientes paquetes del sistema:
++
+`sudo yum install -y lsscsi iscsi-initiator-utils sg3_utils device-mapper-multipath`
+
+. Inicie el daemon de accesos múltiples:
++
+`sudo mpathconf --enable --with_multipathd y`
+
+. Asegúrese de que así sea `iscsid` y.. `multipathd` están habilitadas y en ejecución:
++
+`sudo systemctl enable iscsid multipathd`
+`sudo systemctl start iscsid multipathd`
+
+. Detecte los destinos iSCSI:
++
+`sudo iscsiadm -m discoverydb -t st -p <DATA_LIF_IP> --discover`
+
+. Inicie sesión en los destinos iSCSI detectados:
++
+`sudo iscsiadm -m node -p <DATA_LIF_IP> --login`
+
+. Activar e iniciar `iscsi`:
++
+`sudo systemctl enable iscsi`
+`sudo systemctl start iscsi`
+
+
+
+
+
+| ISCSI  a| 
+Ubuntu/Debian
+ a| 
+. Instale los siguientes paquetes del sistema:
++
+`sudo apt-get install -y open-iscsi lsscsi sg3-utils multipath-tools scsitools`
+
+. Activar accesos múltiples:
++
+`sudo tee /etc/multipath.conf <<-'EOF'
+defaults {
+    user_friendly_names yes
+    find_multipaths yes
+}
+EOF
+sudo service multipath-tools restart`
+
+. Asegúrese de que así sea `iscsid` y.. `multipathd` están en ejecución:
++
+`sudo service open-iscsi start
+sudo service multipath-tools start`
+
+. Detecte los destinos iSCSI:
++
+`sudo iscsiadm -m discoverydb -t st -p <DATA_LIF_IP> --discover`
+
+. Inicie sesión en los destinos iSCSI detectados:
++
+`sudo iscsiadm -m node -p <DATA_LIF_IP> --login`
+
+
+
+|===

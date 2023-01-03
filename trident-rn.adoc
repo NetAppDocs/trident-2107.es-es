@@ -1,0 +1,86 @@
+---
+sidebar: sidebar 
+permalink: trident-rn.html 
+keywords: 'what"s new, new features, enhancements, known issues, resolved issues, troubleshooting' 
+summary: NetApp mejora y mejora continuamente sus productos y servicios. Aquí encontrará algunas de las funciones, mejoras y correcciones de errores más recientes en la última versión de Astra Trident. 
+---
+= Notas de la versión
+:hardbreaks:
+:allow-uri-read: 
+:icons: font
+:imagesdir: ../media/
+
+
+Las notas de la versión ofrecen información sobre nuevas funciones, mejoras y correcciones de errores en la última versión de Astra Trident.
+
+
+WARNING: La `tridentctl` Binario para Linux que se proporciona en el archivo zip del instalador es la versión probada y compatible. Tenga en cuenta que `macos` binario proporcionado en la `/extras` parte del archivo zip no se ha probado ni es compatible.
+
+
+
+== Novedades
+
+NetApp mejora y mejora continuamente sus productos y servicios. Estas son algunas de las últimas características y funcionalidades disponibles con Astra Trident.
+
+
+
+=== Astra Trident 21.07.02
+
+* Se ha solucionado el problema por el que no se podían montar clones de volúmenes XFS en el mismo nodo que el volumen de origen.
+
+
+
+
+==== Mejoras
+
+* Se ha añadido la compatibilidad con Kubernetes 1.22.
+* Se ha habilitado el operador de Trident y el gráfico Helm para que funcionen con Kubernetes 1.22.
+
+
+Consulte https://github.com/NetApp/trident/releases["Astra Trident GitHub"^] si quiere más información.
+
+
+
+=== Astra Trident 21.07.01
+
+* Se ha solucionado el problema del instalador de YAML personalizado con una imagen diferente.
+* Se ha solucionado el problema del cálculo del tamaño de la instantánea.
+
+
+Consulte https://github.com/NetApp/trident/releases/tag/v21.07.1["Astra Trident GitHub"^] si quiere más información.
+
+
+
+=== Astra Trident 21.07
+
+Astra Trident 21.07.0 *no está disponible para su descarga*. Cambios introducidos a. `snapshotReserve` Con la versión 21.07.0 puede resultar en CSI `VolumeSnapshots` No se puede utilizar para crear Claim(s) persistente(s).
+
+Si ya ha actualizado a la versión 21.07.0, se recomienda eliminar la recién creada `VolumeSnapshots` (se suministra con la versión 21.07.0) y se rebaja a la versión anterior.
+
+Consulte https://github.com/NetApp/trident/releases/tag/v21.07.0["Astra Trident GitHub"^] si quiere más información.
+
+
+
+== Problemas conocidos
+
+Los problemas conocidos identifican problemas por los que el uso correcto del producto puede resultar imposible.
+
+* Astra Trident ahora pone en práctica un espacio en blanco `fsType` (`fsType=""`) para los volúmenes que no tienen `fsType` Especificado en su clase de almacenamiento. Cuando trabaje con Kubernetes 1.17 o posterior, Trident admite proporcionar un espacio en blanco `fsType` Para volúmenes NFS. En los volúmenes iSCSI, se requiere que configure el `fsType` En el clase de almacenamiento al aplicar un `fsGroup` Uso de un contexto de seguridad.
+* Si se utiliza un back-end en varias instancias de Astra Trident, cada archivo de configuración de back-end debería tener una diferencia `storagePrefix` Los valores para los back-ends de ONTAP o utilizan una diferencia `TenantName` Para back-ends de SolidFire. Astra Trident no puede detectar los volúmenes que han creado otras instancias de Astra Trident. El intento de crear un volumen existente en los back-ends de ONTAP o SolidFire se realiza correctamente, porque Astra Trident trata la creación de volúmenes como una operación idempotente. Si `storagePrefix` o. `TenantName` no difieren, es posible que haya colisiones de nombres para los volúmenes creados en el mismo back-end.
+* Al instalar Astra Trident (mediante `tridentctl` O el operador de Trident) y uso `tridentctl` Para gestionar Astra Trident, debe garantizar que `KUBECONFIG` la variable de entorno está configurada. Esto es necesario para indicar el clúster de Kubernetes que `tridentctl` debe trabajar en contra. Cuando trabaje con varios entornos de Kubernetes, debe asegurarse de que lo haga `KUBECONFIG` el archivo se ha originado con precisión.
+* Para realizar una reclamación de espacio en línea para VP iSCSI, el sistema operativo subyacente del nodo de trabajo puede requerir que se pasen las opciones de montaje al volumen. Esto es así para las instancias de RHEL/RedHat CoreOS, que requieren el `discard` https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/managing_file_systems/discarding-unused-blocks_managing-file-systems["opción de montaje"^]; Asegúrese de que la opción de montaje de descarte esté incluida en su[`StorageClass`para admitir descarte de bloques en línea.
+* Si dispone de más de una instancia de Astra Trident por clúster de Kubernetes, Astra Trident no puede comunicarse con otras instancias y no puede detectar otros volúmenes que han creado, lo que conduce a un comportamiento inesperado e incorrecto si más de una instancia se ejecuta en un clúster. Solo debe haber una instancia de Astra Trident por clúster de Kubernetes.
+* Si se basa en Astra Trident `StorageClass` Los objetos se eliminan de Kubernetes mientras Astra Trident está offline, Astra Trident no elimina las clases de almacenamiento correspondientes de su base de datos cuando vuelve a estar online. Debe eliminar estas clases de almacenamiento mediante `tridentctl` O la API DE REST.
+* Si un usuario elimina un VP aprovisionado por Astra Trident antes de eliminar la RVP correspondiente, Astra Trident no elimina automáticamente el volumen del respaldo. Debe eliminar el volumen a través de `tridentctl` O la API DE REST.
+* ONTAP no puede aprovisionar simultáneamente más de un FlexGroup a menos que el conjunto de agregados sea único para cada solicitud de aprovisionamiento.
+* Cuando utilice Astra Trident sobre IPv6, debe especificar `managementLIF` y.. `dataLIF` en la definición de backend entre corchetes. Por ejemplo: ``[fd20:8b1e:b258:2000:f816:3eff:feec:0]``.
+* Si utiliza `solidfire-san` Controlador con OpenShift 4.5, asegúrese de que los nodos de trabajo subyacentes utilizan MD5 como algoritmo de autenticación CHAP.
+
+
+
+
+== Obtenga más información
+
+* https://github.com/NetApp/trident["Astra Trident GitHub"^]
+* https://netapp.io/persistent-storage-provisioner-for-kubernetes/["Blogs de Astra Trident"^]
+
